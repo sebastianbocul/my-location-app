@@ -10,11 +10,23 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/bt_location"
-        android:text="Get my location" />
+        android:text="Get my location"
+        android:enabled="false"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/name"
+        android:hint="name" />
+
+</LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

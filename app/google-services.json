@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "685185903744",
+    "firebase_url": "https://myfriendslocation-54495.firebaseio.com",
+    "project_id": "myfriendslocation-54495",
+    "storage_bucket": "myfriendslocation-54495.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685185903744:android:3b05a892d4ae8faac08a65",
+        "android_client_info": {
+          "package_name": "com.example.mylocationapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "685185903744-mkaac1gonf69rl6m785phh5ap006odi9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mylocationapp",
+            "certificate_hash": "ce0c254a49f4d9e5a96ef35af67ffd0624499d3c"
+          }
+        },
+        {
+          "client_id": "685185903744-bd3moa7g18tanoth011flg3iko9g0t9v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPTdzsIs3c21kW4BUTKYSOG_WDIiUt6cM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "685185903744-bd3moa7g18tanoth011flg3iko9g0t9v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
