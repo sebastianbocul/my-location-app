@@ -1,8 +1,7 @@
 package com.example.mylocationapp;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
@@ -13,7 +12,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
+
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
@@ -27,7 +26,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -39,10 +40,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
+
 import java.util.List;
-import java.util.ListIterator;
+
 import java.util.Locale;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -52,17 +52,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     FusedLocationProviderClient fusedLocationProviderClient;
     FirebaseDatabase database;
     DatabaseReference myRef;
-
-
     private double myLatitude = 0 ,myLongitude = 0;
-
     private GoogleMap myGoogleMap;
-
-
-    private EditText userName;
-
+    private EditText userNameEditText;
     private static final int REQUEST_CODE = 44;
-
     public List<Address> addresses;
 
     private TextWatcher nameTextWatcher = new TextWatcher() {
@@ -73,7 +66,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            String nameInput = userName.getText().toString().trim();
+            String nameInput = userNameEditText.getText().toString().trim();
 
             btLocation.setEnabled(!nameInput.isEmpty());
 
@@ -98,7 +91,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         Toast.makeText(MainActivity.this,"Firebase connection Success", Toast.LENGTH_LONG).show();
 
 
-        userName = (EditText) findViewById(R.id.name);
+        userNameEditText = (EditText) findViewById(R.id.name);
         btLocation = (Button) findViewById(R.id.bt_location);
         textView1 =(TextView) findViewById(R.id.text_view1);
         textView2 =(TextView) findViewById(R.id.text_view2);
@@ -107,9 +100,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         textView5 =(TextView) findViewById(R.id.text_view5);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-
-        userName.addTextChangedListener(nameTextWatcher);
+        userNameEditText.addTextChangedListener(nameTextWatcher);
 
 
 
@@ -118,7 +109,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 //checking permission
                 if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
-                    getLocation(userName.getText().toString());
+                    getLocation(userNameEditText.getText().toString());
                 }
                 else {
                     ActivityCompat.requestPermissions(MainActivity.this, new  String[]{Manifest.permission.ACCESS_FINE_LOCATION},REQUEST_CODE);
@@ -143,18 +134,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                         textView3.setText("Country Name: " + addresses.get(0).getCountryName());
                         textView4.setText("Locality: " + addresses.get(0).getLocality());
                         textView5.setText("Address: " + addresses.get(0).getAddressLine(0));
-
-
-
-
                         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.google_map);
                         supportMapFragment.getMapAsync(MainActivity.this);
 
 
                         database = FirebaseDatabase.getInstance();
-                        myRef = database.getReference(userName);
-
-
+                        myRef = database.getReference().child("Users").child(userName);
 
                         myRef.child("userName").setValue(userName);
 
@@ -196,31 +181,44 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         myGoogleMap = googleMap;
         LatLng latLng = new LatLng(addresses.get(0).getLatitude(),addresses.get(0).getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here.");
         googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
-        googleMap.addMarker(markerOptions);
+
 
 
         myRef = database.getReference();
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-
+            public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
+                myGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                            textView1.setText("Lattitude: " + dataSnapshot.child("Users").child(marker.getTag().toString()).child("latitude").getValue().toString());
+                            textView2.setText("Longitude: " +dataSnapshot.child("Users").child(marker.getTag().toString()).child("longitude").getValue().toString());
+                            textView3.setText("Country Name: " + dataSnapshot.child("Users").child(marker.getTag().toString()).child("countryName").getValue().toString());
+                            textView4.setText("Locality: " + dataSnapshot.child("Users").child(marker.getTag().toString()).child("locality").getValue().toString());
+                            textView5.setText("Address: " + dataSnapshot.child("Users").child(marker.getTag().toString()).child("address").getValue().toString());
+                        return false;
+                    }
+                });
+                for(DataSnapshot ds : dataSnapshot.child("Users").getChildren()){
                     String userName = ds.child("userName").getValue().toString();
                     double latitude = Double.parseDouble(ds.child("latitude").getValue().toString());
                     double longitude = Double.parseDouble(ds.child("longitude").getValue().toString());
-
-
                     double distance = distance(myLatitude,myLongitude,latitude,longitude);
-
-
-
                     LatLng latLngFB = new LatLng(latitude,longitude);
-                    MarkerOptions markerOptionsFB = new MarkerOptions().position(latLngFB).title(userName + "\r" + Math.round(distance) + "km");
-                    myGoogleMap.addMarker(markerOptionsFB);
+                    MarkerOptions markerOptionsFB;
+                    if (userName.equals(userNameEditText.getText().toString())) {
+                        markerOptionsFB= new MarkerOptions().position(latLngFB).title("I'm here").icon(BitmapDescriptorFactory.defaultMarker(300));
+                    }
+                    else {
+                        markerOptionsFB= new MarkerOptions().position(latLngFB).title(userName + "\r" + Math.round(distance) + "km");
+                    }
+                    Marker myMarker = myGoogleMap.addMarker(markerOptionsFB);
+                    myMarker.setTag(ds.child("userName").getValue().toString());
+
+
+
                 }
 
             }
@@ -237,7 +235,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         switch (requestCode){
             case REQUEST_CODE:
                 if(grantResults.length>0 && grantResults[0]  == PackageManager.PERMISSION_GRANTED){
-                    getLocation(userName.getText().toString());
+                    getLocation(userNameEditText.getText().toString());
                 }
                 break;
 
